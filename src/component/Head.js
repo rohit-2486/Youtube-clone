@@ -11,7 +11,7 @@ const Head = () => {
   const searchCache = useSelector((store) => store.search);
 
   const [searchText, setSearchText] = useState("");
-  const [suggestion, setSuggestion] = useState([]);
+  const [suggestion, setSuggestion] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(false);
 
   useEffect(() => {
@@ -26,19 +26,42 @@ const Head = () => {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  const getSearchSuggestion = async () => {
-    // console.log(searchText);
-    const data = await fetch(YOUTUBE_SERACH_API + searchText);
-    const json = await data.json();
-    // console.log(json);
-    setSuggestion(json[1]);
+  // const getSearchSuggestion = async () => {
 
-    //update cache
-    dispatch(
-      CacheResults({
-        [searchText]: json[1],
-      })
-    );
+  //   const data = await fetch(YOUTUBE_SERACH_API + searchText);
+  //   const json = await data.json();
+  //   setSuggestion(json[1]);
+  //   dispatch(
+  //     CacheResults({
+  //       [searchText]: json[1],
+  //     })
+  //   );
+  // };
+
+  const getSearchSuggestion = async () => {
+    try {
+      const response = await fetch(
+        "https://corsproxy.org/?" +
+          encodeURIComponent(YOUTUBE_SERACH_API + searchText)
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const data = await response.json();
+      setSuggestion(data[1]);
+
+      // Update cache
+      dispatch(
+        CacheResults({
+          [searchText]: data[1],
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Handle error here, such as showing a message to the user
+    }
   };
 
   const toggleMenuHandler = () => {
@@ -77,7 +100,7 @@ const Head = () => {
               Search
             </button>
           </div>
-          {showSuggestion && (
+          {/** {showSuggestion && (
             <div className="fixed bg-white p-2 my-2 mx-5 w-[36.666667%] shadow-lg rounded-lg border">
               <ul className="">
                 {suggestion.map((s) => (
@@ -85,6 +108,19 @@ const Head = () => {
                     🔎 {s}
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}  */}
+
+          {showSuggestion && (
+            <div className="fixed bg-white p-2 my-2 mx-5 w-[36.666667%] shadow-lg rounded-lg border">
+              <ul className="">
+                {Array.isArray(suggestion) &&
+                  suggestion.map((s) => (
+                    <li key={s} className="py-2 shadow-sm hover:bg-gray-100">
+                      🔎 {s}
+                    </li>
+                  ))}
               </ul>
             </div>
           )}

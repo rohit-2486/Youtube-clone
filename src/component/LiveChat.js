@@ -18,7 +18,7 @@ const LiveChat = () => {
           message: "hi there is frontend developer",
         })
       );
-    }, 4000);
+    }, 1000);
 
     return () => clearInterval(i);
   }, []);
